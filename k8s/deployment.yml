@@ -1,0 +1,45 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: host-metrics-deploy
+  labels:
+    app: host-metrics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: host-metrics
+  template:
+    metadata:
+      labels:
+        app: host-metrics
+    spec:
+      hostPID: true
+      containers:
+        - name: host-metrics
+          image: akshit7165/host-metrics:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          volumeMounts:
+            - name: procfs
+              mountPath: /hostproc
+      volumes:
+        - name: procfs
+          hostPath:
+            path: /proc
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: host-metrics-svc
+spec:
+  selector:
+    app: host-metrics
+  type: NodePort
+  ports:
+    - port: 3000
+      targetPort: 3000
+      nodePort: 30030
